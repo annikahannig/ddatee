@@ -27,6 +27,7 @@ format(Format, Date) ->
 
 
 
+-spec date_to_yold(calendar:date()) -> integer().
 %%---------------------------------------------------------
 %% @doc Convert year to yold
 %% @end
@@ -36,7 +37,7 @@ date_to_yold({Year, _, _}) ->
 
 
 
-
+-spec date_to_season(calendar:date()) -> integer().
 %%---------------------------------------------------------
 %% @doc Get season for date
 %% @end
@@ -47,6 +48,7 @@ date_to_season(Date) ->
 
 
 
+-spec date_to_day(calendar:date()) -> integer().
 %%---------------------------------------------------------
 %% @doc Get day for date
 %% @end
@@ -57,34 +59,36 @@ date_to_day(Date) ->
 
 
 
+-spec day_in_year(calendar:date()) -> integer().
 %%---------------------------------------------------------
 %% @doc Helper: Get day in year.
 %% @end
 %%---------------------------------------------------------
 day_in_year({_, 1, Day}) -> Day;
-day_in_year({Year, Month, Day} = Date) ->
-    Day + lists:sum([days_in_month({Year, M}) ||
+day_in_year({_, Month, Day} = Date) ->
+    Day + lists:sum([days_in_month(M) ||
                      M <- lists:seq(1, Month - 1)]).
     
     
 
 
+-spec days_in_month(calendar:month()) -> integer().
 %%---------------------------------------------------------
 %% @doc Helper: Get days for month in a given year.
 %% @end
 %%---------------------------------------------------------
-days_in_month({_, 1})  -> 31;
-days_in_month({_, 2})  -> 28; %% approximately
-days_in_month({_, 3})  -> 31;
-days_in_month({_, 4})  -> 30;
-days_in_month({_, 5})  -> 31;
-days_in_month({_, 6})  -> 30;
-days_in_month({_, 7})  -> 31;
-days_in_month({_, 8})  -> 31;
-days_in_month({_, 9})  -> 30;
-days_in_month({_, 10}) -> 31;
-days_in_month({_, 11}) -> 30;
-days_in_month({_, 12}) -> 31.
+days_in_month(1)  -> 31;
+days_in_month(2)  -> 28; %% approximately
+days_in_month(3)  -> 31;
+days_in_month(4)  -> 30;
+days_in_month(5)  -> 31;
+days_in_month(6)  -> 30;
+days_in_month(7)  -> 31;
+days_in_month(8)  -> 31;
+days_in_month(9)  -> 30;
+days_in_month(10) -> 31;
+days_in_month(11) -> 30;
+days_in_month(12) -> 31.
 
 
 
@@ -162,10 +166,9 @@ day_in_year_test_() ->
 %% Test days in month
 %%---------------------------------------------------------
 days_in_month_test_() ->
-    Expected = [{{2017, 2}, 28},
-                {{2016, 2}, 28}, % st_tibs_day
-                {{2017, 4}, 30},
-                {{2017, 5}, 31}],
+    Expected = [{2, 28},
+                {4, 30},
+                {5, 31}],
     [{"days in month", ?_assertEqual(Days, days_in_month(Date))} ||
         {Date, Days} <- Expected].
 
