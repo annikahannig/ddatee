@@ -37,29 +37,6 @@ date_to_yold({Year, _, _}) ->
 
 
 
-
-%%---------------------------------------------------------
-%% @doc Helper: Get days for month in a given year.
-%% @end
-%%---------------------------------------------------------
-days_in_month({_, 1,  _}) -> 31;
-days_in_month({Year, 2,  _}) ->
-    case calendar:is_leap_year(Year) of
-        true  -> 29;
-        false -> 28
-    end;
-days_in_month({_, 3,  _}) -> 31;
-days_in_month({_, 4,  _}) -> 30;
-days_in_month({_, 5,  _}) -> 31;
-days_in_month({_, 6,  _}) -> 30;
-days_in_month({_, 7,  _}) -> 31;
-days_in_month({_, 8,  _}) -> 31;
-days_in_month({_, 9,  _}) -> 30;
-days_in_month({_, 10, _}) -> 30;
-days_in_month({_, 11, _}) -> 31;
-days_in_month({_, 12, _}) -> 30.
-
-
 %%---------------------------------------------------------
 %% @doc Convert month to season
 %% @end
@@ -92,6 +69,57 @@ month_to_season({_, Month, Day}) when Month == 10, Day > 19;
 
 
 
+%%---------------------------------------------------------
+%% @doc Get season for date
+%% @end
+%%---------------------------------------------------------
+date_to_season(Date) ->
+    Day = day_in_year(Date),
+    Day div 73. % nice QSO.
+
+
+
+%%---------------------------------------------------------
+%% @doc Get day for date
+%% @end
+%%---------------------------------------------------------
+date_to_day(Date) ->
+    Day = day_in_year(Date),
+    Day rem 73. % dito!
+
+
+
+%%---------------------------------------------------------
+%% @doc Helper: Get day in year.
+%% @end
+%%---------------------------------------------------------
+day_in_year({_, 1, Day}) -> Day;
+day_in_year({Year, Month, Day} = Date) ->
+    Day + lists:sum([days_in_month({Year, M}) ||
+                     M <- lists:seq(1, Month - 1)]).
+    
+    
+
+
+%%---------------------------------------------------------
+%% @doc Helper: Get days for month in a given year.
+%% @end
+%%---------------------------------------------------------
+days_in_month({_, 1})  -> 31;
+days_in_month({_, 2})  -> 28; %% approximately
+days_in_month({_, 3})  -> 31;
+days_in_month({_, 4})  -> 30;
+days_in_month({_, 5})  -> 31;
+days_in_month({_, 6})  -> 30;
+days_in_month({_, 7})  -> 31;
+days_in_month({_, 8})  -> 31;
+days_in_month({_, 9})  -> 30;
+days_in_month({_, 10}) -> 30;
+days_in_month({_, 11}) -> 31;
+days_in_month({_, 12}) -> 30.
+
+
+
 
 %%---------------------------------------------------------
 %% @doc Get holiday from date
@@ -102,8 +130,8 @@ date_to_holiday({_, 2,  19})  -> chaosflux;
 date_to_holiday({_, 29, 2})   -> st_tibs_day;
 date_to_holiday({_, 3,  19})  -> mojoday;
 date_to_holiday({_, 5,  3})   -> discoflux;
-date_to_holiday({_, 5, 31})   -> syaday;
-date_to_holiday({_, 7, 15})   -> confuflux.
+date_to_holiday({_, 5,  31})  -> syaday;
+date_to_holiday({_, 7,  15})  -> confuflux.
 
 
 %%=========================================================
@@ -128,18 +156,6 @@ date_to_yold_test_() ->
 
 
 %%---------------------------------------------------------
-%% Test days in month
-%%---------------------------------------------------------
-days_in_month_test_() ->
-    Expected = [{{2017, 2, 20}, 28},
-                {{2016, 2, 10}, 29},
-                {{2017, 4, 11}, 30},
-                {{2017, 5, 31}, 31}],
-    [{"days in month", ?_assertEqual(Days, days_in_month(Date))} ||
-        {Date, Days} <- Expected].
-
-
-%%---------------------------------------------------------
 %% Test month to season conversion 
 %%---------------------------------------------------------
 month_to_season_test_() ->
@@ -151,6 +167,31 @@ month_to_season_test_() ->
 
     [{"convert season", ?_assertEqual(Season, month_to_season(Date))} ||
        {Date, Season} <- Conversions]. 
+
+
+
+%%---------------------------------------------------------
+%% Test day in year
+%%---------------------------------------------------------
+day_in_year_test_() ->
+    Expected = [{{2017, 1, 1},  1},
+                {{2017, 3, 1},  60},
+                {{2017, 3, 30}, 89}],
+    [{"day in year", ?_assertEqual(Day, day_in_year(Date))} ||
+        {Date, Day} <- Expected].
+
+
+
+%%---------------------------------------------------------
+%% Test days in month
+%%---------------------------------------------------------
+days_in_month_test_() ->
+    Expected = [{{2017, 2}, 28},
+                {{2016, 2}, 28}, % st_tibs_day
+                {{2017, 4}, 30},
+                {{2017, 5}, 31}],
+    [{"days in month", ?_assertEqual(Days, days_in_month(Date))} ||
+        {Date, Days} <- Expected].
 
 
 
