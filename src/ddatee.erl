@@ -6,7 +6,7 @@
 -module(ddatee).
 
 -export([date_to_ddate/1, format/1, format/2]).
-
+-export([month_to_season/1]).
 
 -type ddate() :: {integer(), integer(), integer()} | atom().
 
@@ -26,6 +26,44 @@ format(Format, Date) ->
     ok.
 
 
+%%---------------------------------------------------------
+%% @doc Convert year to yold
+%% @end
+%%---------------------------------------------------------
+year_to_yold({Year, _, _}) ->
+    Year + 1166.
+
+
+
+%%---------------------------------------------------------
+%% @doc Convert month to season
+%%---------------------------------------------------------
+month_to_season({_, Month, Day}) when Month == 1;
+                                      Month == 2;
+                                      Month == 3,  Day =< 14 ->
+    chaos;
+
+month_to_season({_, Month, Day}) when Month == 3,  Day > 14;
+                                      Month == 4;
+                                      Month == 5,  Day =< 26 ->
+    discord;
+
+month_to_season({_, Month, Day}) when Month == 5,  Day > 26;
+                                      Month == 6;
+                                      Month == 7;
+                                      Month == 8,  Day =< 7 ->
+    confusion;
+
+month_to_season({_, Month, Day}) when Month == 8,  Day > 7;
+                                      Month == 9;
+                                      Month == 10, Day =< 19 ->
+    bureaucracy;
+
+month_to_season({_, Month, Day}) when Month == 10, Day > 19;
+                                      Month == 11;
+                                      Month == 12 ->
+    the_aftermath.
+
 
 %%=========================================================
 %% Tests
@@ -35,10 +73,26 @@ format(Format, Date) ->
 -include_lib("eunit/include/eunit.hrl").
 
 
+
+%%---------------------------------------------------------
+%% Test month to season conversion 
+%%---------------------------------------------------------
+month_to_season_test_() ->
+   Conversion = [ {{2017, 1, 1},   chaos},
+                  {{2017, 5, 10},  discord},
+                  {{2017, 8, 7},   confusion},
+                  {{2017, 8, 8},   bureaucracy},
+                  {{2017, 11, 4},  the_aftermath}],
+
+    [{"convert season", ?_assertEqual(Season, month_to_season(Date))} ||
+       {Date, Season} <- Conversion]. 
+
+
+
 %%---------------------------------------------------------
 %% Test date to ddate conversion
 %%---------------------------------------------------------
-date_to_ddate_test_() ->
+date_to_ddate_text_() ->
     Dates = [ {"normal date", {2017, 5, 11}, {28, 2, 3183}},
               {"leap year",   {2016, 2, 29}, st_tibs_day} ],
 
