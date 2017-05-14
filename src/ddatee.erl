@@ -91,6 +91,14 @@ days_in_month(11) -> 30;
 days_in_month(12) -> 31.
 
 
+-spec date_to_weekday(calendar:date()) -> integer().
+%%---------------------------------------------------------
+%% @doc Convert date to weekday
+%% @end
+%%---------------------------------------------------------
+date_to_weekday(Date) ->
+    Day = day_in_year(Date),
+    1 + (Day - 1) rem 5.
 
 
 %%---------------------------------------------------------
@@ -142,10 +150,23 @@ date_to_season_test_() ->
                   {{2017, 10, 20}, 5},
                   {{2017, 12, 31}, 5}],
 
-
     [{"convert season", ?_assertEqual(Season, date_to_season(Date))} ||
        {Date, Season} <- Conversions]. 
 
+
+
+%%---------------------------------------------------------
+%% Test weekday caclculation
+%%---------------------------------------------------------
+date_to_weekday_test_() ->
+    Expected = [{{2017, 1, 1},   1},
+                {{2017, 1, 2},   2},
+                {{2017, 1, 5},   5},
+                {{2017, 1, 6},   1},
+                {{2017, 1, 7},   2},
+                {{2017, 12, 31}, 5}],
+    [{"date to weekday", ?_assertEqual(Weekday, date_to_weekday(Date))} ||
+        {Date, Weekday} <- Expected].
 
 
 %%---------------------------------------------------------
