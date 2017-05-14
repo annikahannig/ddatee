@@ -26,16 +26,43 @@ format(Format, Date) ->
     ok.
 
 
+
+
 %%---------------------------------------------------------
 %% @doc Convert year to yold
 %% @end
 %%---------------------------------------------------------
-year_to_yold({Year, _, _}) ->
+date_to_yold({Year, _, _}) ->
     Year + 1166.
+
+
+
+
+%%---------------------------------------------------------
+%% @doc Helper: Get days for month in a given year.
+%% @end
+%%---------------------------------------------------------
+days_in_month({_, 1,  _}) -> 31;
+days_in_month({Year, 2,  _}) ->
+    case calendar:is_leap_year(Year) of
+        true  -> 29;
+        false -> 28
+    end;
+days_in_month({_, 3,  _}) -> 31;
+days_in_month({_, 4,  _}) -> 30;
+days_in_month({_, 5,  _}) -> 31;
+days_in_month({_, 6,  _}) -> 30;
+days_in_month({_, 7,  _}) -> 31;
+days_in_month({_, 8,  _}) -> 31;
+days_in_month({_, 9,  _}) -> 30;
+days_in_month({_, 10, _}) -> 30;
+days_in_month({_, 11, _}) -> 31;
+days_in_month({_, 12, _}) -> 30.
 
 
 %%---------------------------------------------------------
 %% @doc Convert month to season
+%% @end
 %%---------------------------------------------------------
 month_to_season({_, Month, Day}) when Month == 1;
                                       Month == 2;
@@ -64,6 +91,21 @@ month_to_season({_, Month, Day}) when Month == 10, Day > 19;
     the_aftermath.
 
 
+
+
+%%---------------------------------------------------------
+%% @doc Get holiday from date
+%% @end
+%%---------------------------------------------------------
+date_to_holiday({_, 1,  5})   -> mungtag;
+date_to_holiday({_, 2,  19})  -> chaosflux;
+date_to_holiday({_, 29, 2})   -> st_tibs_day;
+date_to_holiday({_, 3,  19})  -> mojoday;
+date_to_holiday({_, 5,  3})   -> discoflux;
+date_to_holiday({_, 5, 31})   -> syaday;
+date_to_holiday({_, 7, 15})   -> confuflux.
+
+
 %%=========================================================
 %% Tests
 %%=========================================================
@@ -73,16 +115,29 @@ month_to_season({_, Month, Day}) when Month == 10, Day > 19;
 
 
 
-
 %%---------------------------------------------------------
 %% Test Year to YOLD
 %%---------------------------------------------------------
-year_to_yold_test_() ->
-    Conversions = [{{-1165, 1, 1}, 1},
-                   {{0, 1, 1},     1166},
-                   {{2017, 1, 1},  3183}],
-    [{"convert yold", ?_assertEqual(Yold, year_to_yold(Date))} ||
-        {Date, Yold} <- Conversions].
+date_to_yold_test_() ->
+    Expected = [{{-1165, 1, 1}, 1},
+                {{0, 1, 1},     1166},
+                {{2017, 1, 1},  3183}],
+    [{"convert yold", ?_assertEqual(Yold, date_to_yold(Date))} ||
+        {Date, Yold} <- Expected].
+
+
+
+%%---------------------------------------------------------
+%% Test days in month
+%%---------------------------------------------------------
+days_in_month_test_() ->
+    Expected = [{{2017, 2, 20}, 28},
+                {{2016, 2, 10}, 29},
+                {{2017, 4, 11}, 30},
+                {{2017, 5, 31}, 31}],
+    [{"days in month", ?_assertEqual(Days, days_in_month(Date))} ||
+        {Date, Days} <- Expected].
+
 
 %%---------------------------------------------------------
 %% Test month to season conversion 
