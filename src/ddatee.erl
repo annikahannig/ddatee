@@ -34,7 +34,6 @@ year_to_yold({Year, _, _}) ->
     Year + 1166.
 
 
-
 %%---------------------------------------------------------
 %% @doc Convert month to season
 %%---------------------------------------------------------
@@ -74,18 +73,29 @@ month_to_season({_, Month, Day}) when Month == 10, Day > 19;
 
 
 
+
+%%---------------------------------------------------------
+%% Test Year to YOLD
+%%---------------------------------------------------------
+year_to_yold_test_() ->
+    Conversions = [{{-1165, 1, 1}, 1},
+                   {{0, 1, 1},     1166},
+                   {{2017, 1, 1},  3183}],
+    [{"convert yold", ?_assertEqual(Yold, year_to_yold(Date))} ||
+        {Date, Yold} <- Conversions].
+
 %%---------------------------------------------------------
 %% Test month to season conversion 
 %%---------------------------------------------------------
 month_to_season_test_() ->
-   Conversion = [ {{2017, 1, 1},   chaos},
+   Conversions = [{{2017, 1, 1},   chaos},
                   {{2017, 5, 10},  discord},
                   {{2017, 8, 7},   confusion},
                   {{2017, 8, 8},   bureaucracy},
                   {{2017, 11, 4},  the_aftermath}],
 
     [{"convert season", ?_assertEqual(Season, month_to_season(Date))} ||
-       {Date, Season} <- Conversion]. 
+       {Date, Season} <- Conversions]. 
 
 
 
