@@ -6,7 +6,6 @@
 -module(ddatee).
 
 -export([date_to_ddate/1, format/1, format/2]).
--export([month_to_season/1]).
 
 -type ddate() :: {integer(), integer(), integer()} | atom().
 
@@ -37,37 +36,6 @@ date_to_yold({Year, _, _}) ->
 
 
 
-%%---------------------------------------------------------
-%% @doc Convert month to season
-%% @end
-%%---------------------------------------------------------
-month_to_season({_, Month, Day}) when Month == 1;
-                                      Month == 2;
-                                      Month == 3,  Day =< 14 ->
-    chaos;
-
-month_to_season({_, Month, Day}) when Month == 3,  Day > 14;
-                                      Month == 4;
-                                      Month == 5,  Day =< 26 ->
-    discord;
-
-month_to_season({_, Month, Day}) when Month == 5,  Day > 26;
-                                      Month == 6;
-                                      Month == 7;
-                                      Month == 8,  Day =< 7 ->
-    confusion;
-
-month_to_season({_, Month, Day}) when Month == 8,  Day > 7;
-                                      Month == 9;
-                                      Month == 10, Day =< 19 ->
-    bureaucracy;
-
-month_to_season({_, Month, Day}) when Month == 10, Day > 19;
-                                      Month == 11;
-                                      Month == 12 ->
-    the_aftermath.
-
-
 
 %%---------------------------------------------------------
 %% @doc Get season for date
@@ -75,7 +43,7 @@ month_to_season({_, Month, Day}) when Month == 10, Day > 19;
 %%---------------------------------------------------------
 date_to_season(Date) ->
     Day = day_in_year(Date),
-    Day div 73. % nice QSO.
+    1 + (Day - 1) div 73. % nice QSO.
 
 
 
@@ -85,7 +53,7 @@ date_to_season(Date) ->
 %%---------------------------------------------------------
 date_to_day(Date) ->
     Day = day_in_year(Date),
-    Day rem 73. % dito!
+    1 + (Day - 1) rem 73. % dito!
 
 
 
@@ -114,9 +82,9 @@ days_in_month({_, 6})  -> 30;
 days_in_month({_, 7})  -> 31;
 days_in_month({_, 8})  -> 31;
 days_in_month({_, 9})  -> 30;
-days_in_month({_, 10}) -> 30;
-days_in_month({_, 11}) -> 31;
-days_in_month({_, 12}) -> 30.
+days_in_month({_, 10}) -> 31;
+days_in_month({_, 11}) -> 30;
+days_in_month({_, 12}) -> 31.
 
 
 
@@ -158,14 +126,14 @@ date_to_yold_test_() ->
 %%---------------------------------------------------------
 %% Test month to season conversion 
 %%---------------------------------------------------------
-month_to_season_test_() ->
-   Conversions = [{{2017, 1, 1},   chaos},
-                  {{2017, 5, 10},  discord},
-                  {{2017, 8, 7},   confusion},
-                  {{2017, 8, 8},   bureaucracy},
-                  {{2017, 11, 4},  the_aftermath}],
+date_to_season_test_() ->
+   Conversions = [{{2017, 1, 1},   1},
+                  {{2017, 3, 14},  1},
+                  {{2017, 3, 15},  2},
+                  {{2017, 5, 26},  2},
+                  {{2017, 5, 27},  3}],
 
-    [{"convert season", ?_assertEqual(Season, month_to_season(Date))} ||
+    [{"convert season", ?_assertEqual(Season, date_to_season(Date))} ||
        {Date, Season} <- Conversions]. 
 
 
@@ -176,7 +144,9 @@ month_to_season_test_() ->
 day_in_year_test_() ->
     Expected = [{{2017, 1, 1},  1},
                 {{2017, 3, 1},  60},
-                {{2017, 3, 30}, 89}],
+                {{2017, 3, 30}, 89},
+                {{2017, 8, 7},  219},
+                {{2017, 8, 8},  220}],
     [{"day in year", ?_assertEqual(Day, day_in_year(Date))} ||
         {Date, Day} <- Expected].
 
