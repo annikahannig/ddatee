@@ -10,19 +10,28 @@
 -type ddate() :: {integer(), integer(), integer()} | atom().
 
 
+-spec date_to_ddate(calendar:date()) -> ddate().
 %%---------------------------------------------------------
 %% @doc Convert date tuple to ddate
 %%---------------------------------------------------------
--spec date_to_ddate(calendar:date()) -> ddate().
+date_to_ddate({Year, 2, 29}) ->
+    case calendar:is_leap_year(Year) of
+        true -> st_tibs_day
+    end;
+
 date_to_ddate(Date) ->
-    ok.
+    {date_to_yold(Date),
+     date_to_season(Date),
+     date_to_day(Date)}.
+
+
 
 format(Date) ->
-    ok.
+    implement_me.
 
 
 format(Format, Date) ->
-    ok.
+    implement_me.
 
 
 
@@ -69,7 +78,6 @@ day_in_year({_, Month, Day} = Date) ->
     Day + lists:sum([days_in_month(M) ||
                      M <- lists:seq(1, Month - 1)]).
     
-    
 
 
 -spec days_in_month(calendar:month()) -> integer().
@@ -91,6 +99,7 @@ days_in_month(11) -> 30;
 days_in_month(12) -> 31.
 
 
+
 -spec date_to_weekday(calendar:date()) -> integer().
 %%---------------------------------------------------------
 %% @doc Convert date to weekday
@@ -99,6 +108,7 @@ days_in_month(12) -> 31.
 date_to_weekday(Date) ->
     Day = day_in_year(Date),
     1 + (Day - 1) rem 5.
+
 
 
 %%---------------------------------------------------------
@@ -169,6 +179,7 @@ date_to_weekday_test_() ->
         {Date, Weekday} <- Expected].
 
 
+
 %%---------------------------------------------------------
 %% Test day in year
 %%---------------------------------------------------------
@@ -198,8 +209,8 @@ days_in_month_test_() ->
 %%---------------------------------------------------------
 %% Test date to ddate conversion
 %%---------------------------------------------------------
-date_to_ddate_text_() ->
-    Dates = [ {"normal date", {2017, 5, 11}, {28, 2, 3183}},
+date_to_ddate_test_() ->
+    Dates = [ {"normal date", {2017, 5, 11}, {3183, 2, 58}},
               {"leap year",   {2016, 2, 29}, st_tibs_day} ],
 
     [{Test, ?_assertEqual(DDate, date_to_ddate(Date))} ||
