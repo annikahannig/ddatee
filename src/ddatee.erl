@@ -8,7 +8,11 @@
 -export([date_to_ddate/1, format/1, format/2]).
 
 
-% DDate date types
+%%---------------------------------------------------------
+%% DDate date types
+%%---------------------------------------------------------
+-export_type([ddate/0]).
+
 -type yold()    :: non_neg_integer().
 -type season()  :: 1..5.
 -type day()     :: 1..73.
