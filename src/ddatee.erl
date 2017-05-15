@@ -40,6 +40,7 @@
 -spec date_to_ddate(calendar:date()) -> ddate().
 %%---------------------------------------------------------
 %% @doc Convert date tuple to ddate
+%% @end
 %%---------------------------------------------------------
 date_to_ddate({Year, 2, 29} = Date) ->
     Yold = date_to_yold(Date),
