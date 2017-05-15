@@ -16,7 +16,7 @@
 %%---------------------------------------------------------
 date_to_ddate({Year, 2, 29}) ->
     case calendar:is_leap_year(Year) of
-        true -> st_tibs_day
+        true -> {Year, st_tibs_day}
     end;
 
 date_to_ddate(Date) ->
@@ -112,16 +112,20 @@ date_to_weekday(Date) ->
 
 
 %%---------------------------------------------------------
-%% @doc Get holiday from date
+%% @doc Get holiday from ddate
 %% @end
 %%---------------------------------------------------------
-date_to_holiday({_, 1,  5})   -> mungtag;
-date_to_holiday({_, 2,  19})  -> chaosflux;
-date_to_holiday({_, 29, 2})   -> st_tibs_day;
-date_to_holiday({_, 3,  19})  -> mojoday;
-date_to_holiday({_, 5,  3})   -> discoflux;
-date_to_holiday({_, 5,  31})  -> syaday;
-date_to_holiday({_, 7,  15})  -> confuflux.
+ddate_to_holiday({_, 1, 5})   -> mungday;
+ddate_to_holiday({_, 1, 50})  -> chaoflux;
+ddate_to_holiday({_, 2, 5})   -> mojoday;
+ddate_to_holiday({_, 2, 50})  -> discoflux;
+ddate_to_holiday({_, 3, 5})   -> syaday;
+ddate_to_holiday({_, 3, 50})  -> confuflux;
+ddate_to_holiday({_, 4, 5})   -> zaraday;
+ddate_to_holiday({_, 4, 50})  -> bureflux;
+ddate_to_holiday({_, 5, 5})   -> maladay;
+ddate_to_holiday({_, 5, 50})  -> afflux;
+ddate_to_holiday({_, st_tibs_day}) -> st_tibs_day.
 
 
 %%=========================================================
@@ -207,11 +211,32 @@ days_in_month_test_() ->
 
 
 %%---------------------------------------------------------
+%% Test holidays
+%%---------------------------------------------------------
+ddate_to_holiday_test_() ->
+    Expected = [{{2017, 1,  5},  mungday},
+                {{2017, 2,  19}, chaoflux},
+                {{2016, 2,  29}, st_tibs_day},
+                {{2017, 3,  19}, mojoday},
+                {{2017, 5,  3},  discoflux},
+                {{2017, 5,  31}, syaday},
+                {{2017, 7,  15}, confuflux},
+                {{2017, 8,  12}, zaraday},
+                {{2017, 9,  26}, bureflux},
+                {{2017, 10, 24}, maladay},
+                {{2017, 12, 8},  afflux}],
+    [{"date to holiday",
+      ?_assertEqual(Holiday, ddate_to_holiday(date_to_ddate(Date)))} ||
+        {Date, Holiday} <- Expected].
+
+
+
+%%---------------------------------------------------------
 %% Test date to ddate conversion
 %%---------------------------------------------------------
 date_to_ddate_test_() ->
     Dates = [ {"normal date", {2017, 5, 11}, {3183, 2, 58}},
-              {"leap year",   {2016, 2, 29}, st_tibs_day} ],
+              {"leap year",   {2016, 2, 29}, {2016, st_tibs_day}} ],
 
     [{Test, ?_assertEqual(DDate, date_to_ddate(Date))} ||
         {Test, Date, DDate} <- Dates].
