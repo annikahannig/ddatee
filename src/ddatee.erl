@@ -7,16 +7,44 @@
 
 -export([date_to_ddate/1, format/1, format/2]).
 
--type ddate() :: {integer(), integer(), integer()} | atom().
+
+% DDate date types
+-type yold()    :: non_neg_integer().
+-type season()  :: 1..5.
+-type day()     :: 1..73.
+
+-type holiday() :: mungday |
+                   chaoflux |
+                   st_tibs_day |
+                   mojoday |
+                   discoflux |
+                   syaday |
+                   confuflux |
+                   zaraday |
+                   bureflux |
+                   maladay |
+                   afflux.
+
+-type weekday() :: 1..5.
+
+-type ddate() :: {yold(), season(), day()} |
+                 {yold(), holiday()}.
+
+
+
+%%=========================================================
+%% DDate API
+%%=========================================================
 
 
 -spec date_to_ddate(calendar:date()) -> ddate().
 %%---------------------------------------------------------
 %% @doc Convert date tuple to ddate
 %%---------------------------------------------------------
-date_to_ddate({Year, 2, 29}) ->
+date_to_ddate({Year, 2, 29} = Date) ->
+    Yold = date_to_yold(Date),
     case calendar:is_leap_year(Year) of
-        true -> {Year, st_tibs_day}
+        true -> {Yold, st_tibs_day}
     end;
 
 date_to_ddate(Date) ->
@@ -36,7 +64,7 @@ format(Format, Date) ->
 
 
 
--spec date_to_yold(calendar:date()) -> integer().
+-spec date_to_yold(calendar:date()) -> yold().
 %%---------------------------------------------------------
 %% @doc Convert year to yold
 %% @end
@@ -46,7 +74,7 @@ date_to_yold({Year, _, _}) ->
 
 
 
--spec date_to_season(calendar:date()) -> integer().
+-spec date_to_season(calendar:date()) -> season().
 %%---------------------------------------------------------
 %% @doc Get season for date
 %% @end
@@ -57,7 +85,7 @@ date_to_season(Date) ->
 
 
 
--spec date_to_day(calendar:date()) -> integer().
+-spec date_to_day(calendar:date()) -> day().
 %%---------------------------------------------------------
 %% @doc Get day for date
 %% @end
@@ -68,7 +96,7 @@ date_to_day(Date) ->
 
 
 
--spec day_in_year(calendar:date()) -> integer().
+-spec day_in_year(calendar:date()) -> non_neg_integer().
 %%---------------------------------------------------------
 %% @doc Helper: Get day in year.
 %% @end
@@ -80,7 +108,7 @@ day_in_year({_, Month, Day} = Date) ->
     
 
 
--spec days_in_month(calendar:month()) -> integer().
+-spec days_in_month(calendar:month()) -> 28 | 30 | 31.
 %%---------------------------------------------------------
 %% @doc Helper: Get days for month in a given year.
 %% @end
@@ -100,7 +128,7 @@ days_in_month(12) -> 31.
 
 
 
--spec date_to_weekday(calendar:date()) -> integer().
+-spec date_to_weekday(calendar:date()) -> weekday().
 %%---------------------------------------------------------
 %% @doc Convert date to weekday
 %% @end
@@ -111,6 +139,7 @@ date_to_weekday(Date) ->
 
 
 
+-spec ddate_to_holiday(ddate()) -> holiday().
 %%---------------------------------------------------------
 %% @doc Get holiday from ddate
 %% @end
@@ -128,13 +157,13 @@ ddate_to_holiday({_, 5, 50})  -> afflux;
 ddate_to_holiday({_, st_tibs_day}) -> st_tibs_day.
 
 
+
 %%=========================================================
 %% Tests
 %%=========================================================
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
-
 
 
 %%---------------------------------------------------------
@@ -236,13 +265,10 @@ ddate_to_holiday_test_() ->
 %%---------------------------------------------------------
 date_to_ddate_test_() ->
     Dates = [ {"normal date", {2017, 5, 11}, {3183, 2, 58}},
-              {"leap year",   {2016, 2, 29}, {2016, st_tibs_day}} ],
+              {"leap year",   {2016, 2, 29}, {3182, st_tibs_day}} ],
 
     [{Test, ?_assertEqual(DDate, date_to_ddate(Date))} ||
         {Test, Date, DDate} <- Dates].
 
-
-
 -endif.
-
 
