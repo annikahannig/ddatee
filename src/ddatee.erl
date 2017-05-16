@@ -8,6 +8,7 @@
 -export([date_to_ddate/1, format/1, format/2]).
 
 
+
 %%---------------------------------------------------------
 %% DDate date types
 %%---------------------------------------------------------
@@ -34,7 +35,7 @@
 -type ddate() :: {yold(), season(), day()} |
                  {yold(), holiday()}.
 
-
+-type tpl() :: string() | atom().
 
 %%=========================================================
 %% DDate API
@@ -59,12 +60,87 @@ date_to_ddate(Date) ->
 
 
 
+-spec format(ddate()) -> string().
+%%---------------------------------------------------------
+%% @doc Format date with default format
+%% @end
+%%---------------------------------------------------------
 format(Date) ->
-    implement_me.
+    format(full, Date).
 
 
+
+-spec format(tpl(), ddate()) -> string().
+%%---------------------------------------------------------
+%% @doc Format date with (custom) format.
+%%      Tags:
+%%        :day:     the numeric day
+%%        :season:   the numeri
+%% @end
+%%---------------------------------------------------------
 format(Format, Date) ->
-    implement_me.
+    Template = format_template(Format),
+    E = re:replace(Template, ":day:",       format_day(Date)),
+    R = re:replace(E,        ":day_suffix", format_day_suffix(Date)),
+    I = re:replace(R,        ":season:",    format_season(Date)),
+    S = re:replace(I,        ":yold:",      format_yold(Date)), 
+    D = re:replace(S,        ":weekday:",   format_weekday(Date)), D.
+
+
+
+-spec format_day(ddate()) -> string().
+%%---------------------------------------------------------
+%% @doc Day in season to string
+%% @end
+%%---------------------------------------------------------
+format_day({_Yold, _Season, Day}) -> integer_to_list(Day).
+
+
+-spec format_day_suffix(ddate()) -> string().
+%%---------------------------------------------------------
+%% @doc Get day suffix (1st, 2nd, ...)
+%% @end
+%%---------------------------------------------------------
+format_day_suffix({_Y, _S, D}) when D rem 100 >= 10,
+                                    D rem 100 =< 20  -> "th";
+format_day_suffix({_Y, _S, D}) when D rem 10 =:= 1   -> "st";
+format_day_suffix({_Y, _S, D}) when D rem 10 =:= 2   -> "nd";
+format_day_suffix({_Y, _S, D}) when D rem 10 =:= 3   -> "rd";
+format_day_suffix(_)                                 -> "th".
+
+
+
+-spec format_season(ddate()) -> string().
+%%---------------------------------------------------------
+%% @doc Translate season to string
+%% @end
+%%---------------------------------------------------------
+format_season({_Y, 1, _D}) -> "Chaos";
+format_season({_Y, 2, _D}) -> "Discord";
+format_season({_Y, 3, _D}) -> "Confusion";
+format_season({_Y, 4, _D}) -> "Bureaucracy";
+format_season({_Y, 5, _D}) -> "The Aftermath".
+    
+
+-spec format_yold(ddate()) -> string().
+%%---------------------------------------------------------
+%% @doc Convert YOLD to string
+%% @end
+%%---------------------------------------------------------
+format_yold({Y, _S, _D}) -> integer_to_list(Y).
+
+
+-spec format_template(tpl()) -> string().
+%%---------------------------------------------------------
+%% @doc Get format templates
+%% @end
+%%---------------------------------------------------------
+format_template(full) -> 
+    ":weekday:, the :day::day_suffix: day of :month: in the YOLD :yold:";
+format_template(short) ->
+    ":weekday:, :month: :day:, :yold: YOLD";
+format_template(Format) ->
+    Format.
 
 
 -spec format_weekday(weekday()) -> string().
@@ -137,7 +213,7 @@ date_to_day(Date) ->
 %% @end
 %%---------------------------------------------------------
 day_in_year({_, 1, Day}) -> Day;
-day_in_year({_, Month, Day} = Date) ->
+day_in_year({_, Month, Day}) ->
     Day + lists:sum([days_in_month(M) ||
                      M <- lists:seq(1, Month - 1)]).
     
@@ -294,6 +370,19 @@ ddate_to_holiday_test_() ->
                                 ddate_to_holiday(
                                     date_to_ddate(Date))))} ||
         {Date, Holiday} <- Expected].
+
+
+
+%%---------------------------------------------------------
+%% Test day format suffix
+%%---------------------------------------------------------
+format_day_suffix_test_() ->
+    Expected = [{1, "st"},  {2, "nd"},  {3, "rd"},  {4, "th"},  {5, "th"},
+                {9, "th"},  {10, "th"}, {11, "th"}, {14, "th"},
+                {20, "th"}, {21, "st"}, {32, "nd"}, {40, "th"}],
+    [{"get ordinal suffix",
+        ?_assertEqual(Suffix, format_day_suffix({2017, 1, D}))} ||
+            {D, Suffix} <- Expected].
 
 
 
