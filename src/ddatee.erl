@@ -67,6 +67,36 @@ format(Format, Date) ->
     implement_me.
 
 
+-spec format_weekday(weekday()) -> string().
+%%---------------------------------------------------------
+%% @doc Format day in discordian week
+%% @end
+%%---------------------------------------------------------
+format_weekday(1) -> "Sweetmourn";
+format_weekday(2) -> "Boomtime";
+format_weekday(3) -> "Pungenday";
+format_weekday(4) -> "Prickle-Prickle";
+format_weekday(5) -> "Setting Orange".
+
+
+
+-spec format_holiday(holiday()) -> string().
+%%---------------------------------------------------------
+%% @doc Format holiday
+%% @end
+%%---------------------------------------------------------
+format_holiday(mungday)     -> "Mungday";
+format_holiday(chaoflux)    -> "Chaoflux";
+format_holiday(st_tibs_day) -> "St. Tib's Day";
+format_holiday(mojoday)     -> "Mojoday";
+format_holiday(discoflux)   -> "Discoflux";
+format_holiday(syaday)      -> "Syaday";
+format_holiday(confuflux)   -> "Confuflux";
+format_holiday(zaraday)     -> "Zaraday";
+format_holiday(bureflux)    -> "Bureflux";
+format_holiday(maladay)     -> "Maladay";
+format_holiday(afflux)      -> "Afflux".
+
 
 
 -spec date_to_yold(calendar:date()) -> yold().
@@ -248,19 +278,21 @@ days_in_month_test_() ->
 %% Test holidays
 %%---------------------------------------------------------
 ddate_to_holiday_test_() ->
-    Expected = [{{2017, 1,  5},  mungday},
-                {{2017, 2,  19}, chaoflux},
-                {{2016, 2,  29}, st_tibs_day},
-                {{2017, 3,  19}, mojoday},
-                {{2017, 5,  3},  discoflux},
-                {{2017, 5,  31}, syaday},
-                {{2017, 7,  15}, confuflux},
-                {{2017, 8,  12}, zaraday},
-                {{2017, 9,  26}, bureflux},
-                {{2017, 10, 24}, maladay},
-                {{2017, 12, 8},  afflux}],
+    Expected = [{{2017, 1,  5},  "Mungday"},
+                {{2017, 2,  19}, "Chaoflux"},
+                {{2016, 2,  29}, "St. Tib's Day"},
+                {{2017, 3,  19}, "Mojoday"},
+                {{2017, 5,  3},  "Discoflux"},
+                {{2017, 5,  31}, "Syaday"},
+                {{2017, 7,  15}, "Confuflux"},
+                {{2017, 8,  12}, "Zaraday"},
+                {{2017, 9,  26}, "Bureflux"},
+                {{2017, 10, 24}, "Maladay"},
+                {{2017, 12, 8},  "Afflux"}],
     [{"date to holiday",
-      ?_assertEqual(Holiday, ddate_to_holiday(date_to_ddate(Date)))} ||
+      ?_assertEqual(Holiday, format_holiday(
+                                ddate_to_holiday(
+                                    date_to_ddate(Date))))} ||
         {Date, Holiday} <- Expected].
 
 
