@@ -151,14 +151,14 @@ format_template(Format) ->
 %% @doc Format day in discordian week
 %% @end
 %%---------------------------------------------------------
-format_weekday(Date) ->
-    format_weekday(ddate_to_weekday(Date));
-
 format_weekday(1) -> "Sweetmourn";
 format_weekday(2) -> "Boomtime";
 format_weekday(3) -> "Pungenday";
 format_weekday(4) -> "Prickle-Prickle";
-format_weekday(5) -> "Setting Orange".
+format_weekday(5) -> "Setting Orange"; 
+
+format_weekday(Date) ->
+    format_weekday(ddate_to_weekday(Date)).
 
 
 
