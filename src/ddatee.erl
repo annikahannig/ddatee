@@ -42,6 +42,8 @@
 %%=========================================================
 
 
+
+
 -spec date_to_ddate(calendar:date()) -> ddate().
 %%---------------------------------------------------------
 %% @doc Convert date tuple to ddate
@@ -143,11 +145,15 @@ format_template(Format) ->
     Format.
 
 
--spec format_weekday(weekday()) -> string().
+
+-spec format_weekday(weekday() | ddate()) -> string().
 %%---------------------------------------------------------
 %% @doc Format day in discordian week
 %% @end
 %%---------------------------------------------------------
+format_weekday(Date) ->
+    format_weekday(ddate_to_weekday(Date));
+
 format_weekday(1) -> "Sweetmourn";
 format_weekday(2) -> "Boomtime";
 format_weekday(3) -> "Pungenday";
@@ -239,14 +245,14 @@ days_in_month(12) -> 31.
 
 
 
--spec date_to_weekday(calendar:date()) -> weekday().
+-spec ddate_to_weekday(ddate()) -> weekday().
 %%---------------------------------------------------------
 %% @doc Convert date to weekday
 %% @end
 %%---------------------------------------------------------
-date_to_weekday(Date) ->
-    Day = day_in_year(Date),
-    1 + (Day - 1) rem 5.
+ddate_to_weekday({_Y, Month, Day}) ->
+    DayInYear = Day + 73 * (Month - 1),
+    1 + (DayInYear - 1) rem 5.
 
 
 
@@ -319,7 +325,7 @@ date_to_weekday_test_() ->
                 {{2017, 1, 6},   1},
                 {{2017, 1, 7},   2},
                 {{2017, 12, 31}, 5}],
-    [{"date to weekday", ?_assertEqual(Weekday, date_to_weekday(Date))} ||
+    [{"date to weekday", ?_assertEqual(Weekday, ddate_to_weekday(date_to_ddate(Date)))} ||
         {Date, Weekday} <- Expected].
 
 
