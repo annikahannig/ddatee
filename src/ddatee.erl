@@ -28,7 +28,8 @@
                    zaraday |
                    bureflux |
                    maladay |
-                   afflux.
+                   afflux |
+                   none.
 
 -type weekday() :: 1..5.
 
@@ -74,7 +75,7 @@ format(Date) ->
 
 -spec format(tpl(), ddate()) -> string().
 %%---------------------------------------------------------
-%% @doc Format date with (custom) format.
+%% @doc Format ddate with (custom) format.
 %%      Tags:
 %%        :day:     the numeric day
 %%        :season:   the numeri
@@ -82,11 +83,13 @@ format(Date) ->
 %%---------------------------------------------------------
 format(Format, Date) ->
     Template = format_template(Format),
-    E = re:replace(Template, ":day:",       format_day(Date)),
-    R = re:replace(E,        ":day_suffix", format_day_suffix(Date)),
-    I = re:replace(R,        ":season:",    format_season(Date)),
-    S = re:replace(I,        ":yold:",      format_yold(Date)), 
-    D = re:replace(S,        ":weekday:",   format_weekday(Date)), D.
+    E = re:replace(Template, ":day:",         format_day(Date)),
+    R = re:replace(E,        ":day_suffix:",  format_day_suffix(Date)),
+    I = re:replace(R,        ":season:",      format_season(Date)),
+    S = re:replace(I,        ":yold:",        format_yold(Date)), 
+    D = re:replace(S,        ":weekday:",     format_weekday(Date)),
+    Isco = re:replace(D,     ":season:",      format_season(Date)), 
+    Rdia = re:replace(Isco,  ":celebration:", format_celebration(Date)), Rdia.
 
 
 
@@ -138,9 +141,9 @@ format_yold({Y, _S, _D}) -> integer_to_list(Y).
 %% @end
 %%---------------------------------------------------------
 format_template(full) -> 
-    ":weekday:, the :day::day_suffix: day of :month: in the YOLD :yold:";
+    ":weekday:, the :day::day_suffix: day of :season: in the YOLD :yold::celebration:";
 format_template(short) ->
-    ":weekday:, :month: :day:, :yold: YOLD";
+    ":weekday:, :season: :day:, :yold: YOLD:celebration:";
 format_template(Format) ->
     Format.
 
@@ -177,8 +180,21 @@ format_holiday(confuflux)   -> "Confuflux";
 format_holiday(zaraday)     -> "Zaraday";
 format_holiday(bureflux)    -> "Bureflux";
 format_holiday(maladay)     -> "Maladay";
-format_holiday(afflux)      -> "Afflux".
+format_holiday(afflux)      -> "Afflux";
+format_holiday(none)        -> "".
 
+
+-spec format_celebration(holiday()) -> string().
+%%---------------------------------------------------------
+%% @doc Format celebration
+%% @end
+%%---------------------------------------------------------
+format_celebration(none) -> "";
+format_celebration({_Y, _M, _D} = Date) ->
+    format_celebration(ddate_to_holiday(Date));
+
+format_celebration(Holiday) ->
+    ", celebrate " ++ format_holiday(Holiday).
 
 
 -spec date_to_yold(calendar:date()) -> yold().
@@ -271,7 +287,8 @@ ddate_to_holiday({_, 4, 5})   -> zaraday;
 ddate_to_holiday({_, 4, 50})  -> bureflux;
 ddate_to_holiday({_, 5, 5})   -> maladay;
 ddate_to_holiday({_, 5, 50})  -> afflux;
-ddate_to_holiday({_, st_tibs_day}) -> st_tibs_day.
+ddate_to_holiday({_, st_tibs_day}) -> st_tibs_day;
+ddate_to_holiday(_)           -> none.
 
 
 
@@ -370,7 +387,8 @@ ddate_to_holiday_test_() ->
                 {{2017, 8,  12}, "Zaraday"},
                 {{2017, 9,  26}, "Bureflux"},
                 {{2017, 10, 24}, "Maladay"},
-                {{2017, 12, 8},  "Afflux"}],
+                {{2017, 12, 8},  "Afflux"},
+                {{2017, 12, 9},  ""}]
     [{"date to holiday",
       ?_assertEqual(Holiday, format_holiday(
                                 ddate_to_holiday(
