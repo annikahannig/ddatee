@@ -33,8 +33,8 @@
 
 -type weekday() :: 1..5.
 
--type ddate() :: {yold(), season(), day()} |
-                 {yold(), holiday()}.
+-type ddate() :: {yold(), holiday()} |
+                 {yold(), season(), day()}.
 
 -type tpl() :: string() | atom().
 
@@ -89,7 +89,9 @@ format(Format, Date) ->
     S = re:replace(I,        ":yold:",        format_yold(Date)), 
     D = re:replace(S,        ":weekday:",     format_weekday(Date)),
     Isco = re:replace(D,     ":season:",      format_season(Date)), 
-    Rdia = re:replace(Isco,  ":celebration:", format_celebration(Date)), Rdia.
+    Rdia = re:replace(Isco,  ":celebration:", format_celebration(Date)), 
+    % This feels wrong:
+    binary_to_list(iolist_to_binary(Rdia)).
 
 
 
@@ -184,7 +186,7 @@ format_holiday(afflux)      -> "Afflux";
 format_holiday(none)        -> "".
 
 
--spec format_celebration(holiday()) -> string().
+-spec format_celebration(ddate()|holiday()) -> string().
 %%---------------------------------------------------------
 %% @doc Format celebration
 %% @end
@@ -388,7 +390,7 @@ ddate_to_holiday_test_() ->
                 {{2017, 9,  26}, "Bureflux"},
                 {{2017, 10, 24}, "Maladay"},
                 {{2017, 12, 8},  "Afflux"},
-                {{2017, 12, 9},  ""}]
+                {{2017, 12, 9},  ""}],
     [{"date to holiday",
       ?_assertEqual(Holiday, format_holiday(
                                 ddate_to_holiday(
@@ -419,6 +421,21 @@ date_to_ddate_test_() ->
 
     [{Test, ?_assertEqual(DDate, date_to_ddate(Date))} ||
         {Test, Date, DDate} <- Dates].
+ 
+
+%%---------------------------------------------------------
+%% Test formatting
+%%---------------------------------------------------------
+format_test_() ->
+    Expected = [
+        {full, {2017, 5, 23},
+               "Pungenday, the 70th day of Discord in the YOLD 3183"},
+        {short, {2017, 5, 23},
+               "Pungenday, Discord 70, 3183 YOLD"}],
+    [{"date formatting",
+        ?_assertEqual(Text, format(Fmt, date_to_ddate(Date)))} ||
+            {Fmt, Date, Text} <- Expected].
+
 
 -endif.
 
