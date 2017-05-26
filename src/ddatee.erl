@@ -18,18 +18,10 @@
 -type season()  :: 1..5.
 -type day()     :: 1..73.
 
--type holiday() :: mungday |
-                   chaoflux |
-                   st_tibs_day |
-                   mojoday |
-                   discoflux |
-                   syaday |
-                   confuflux |
-                   zaraday |
-                   bureflux |
-                   maladay |
-                   afflux |
-                   none.
+
+-type holiday() :: mungday | chaoflux | mojoday | discoflux |
+                   syaday | confuflux | zaraday | bureflux |
+                   maladay | afflux | st_tibs_day | none.
 
 -type weekday() :: 1..5.
 
@@ -77,8 +69,8 @@ format(Date) ->
 %%---------------------------------------------------------
 %% @doc Format ddate with (custom) format.
 %%      Tags:
-%%        :day:     the numeric day
-%%        :season:   the numeri
+%%        :day:      the numeric day
+%%        :season:   the seasons name
 %% @end
 %%---------------------------------------------------------
 format(Format, Date) ->
@@ -174,7 +166,6 @@ format_weekday(Date) ->
 %%---------------------------------------------------------
 format_holiday(mungday)     -> "Mungday";
 format_holiday(chaoflux)    -> "Chaoflux";
-format_holiday(st_tibs_day) -> "St. Tib's Day";
 format_holiday(mojoday)     -> "Mojoday";
 format_holiday(discoflux)   -> "Discoflux";
 format_holiday(syaday)      -> "Syaday";
@@ -183,6 +174,7 @@ format_holiday(zaraday)     -> "Zaraday";
 format_holiday(bureflux)    -> "Bureflux";
 format_holiday(maladay)     -> "Maladay";
 format_holiday(afflux)      -> "Afflux";
+format_holiday(st_tibs_day) -> "St. Tib's Day";
 format_holiday(none)        -> "".
 
 
