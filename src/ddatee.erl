@@ -368,6 +368,28 @@ days_in_month_test_() ->
 
 
 %%---------------------------------------------------------
+%% Test holiday to string conversion
+%%---------------------------------------------------------
+format_holiday_test_() ->
+    Expected = [{mungday,     "Mungday"},
+                {chaoflux,    "Chaoflux"},
+                {mojoday,     "Mojoday"},
+                {discoflux,   "Discoflux"},
+                {syaday,      "Syaday"},
+                {confuflux,   "Confuflux"},
+                {zaraday,     "Zaraday"},
+                {bureflux,    "Bureflux"},
+                {maladay,     "Maladay"},
+                {afflux,      "Afflux"},
+                {st_tibs_day, "St. Tib's Day"},
+                {none,        ""}],
+    [{"holiday to string",
+        ?_assertEqual(Str, format_holiday(Holiday))} ||
+            {Holiday, Str} <- Expected].
+
+
+
+%%---------------------------------------------------------
 %% Test holidays
 %%---------------------------------------------------------
 ddate_to_holiday_test_() ->
