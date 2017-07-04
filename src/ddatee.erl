@@ -17,16 +17,26 @@
 -type yold()    :: non_neg_integer().
 -type season()  :: 1..5.
 -type day()     :: 1..73.
+-type month()   :: 1..12. %% calendar doesn't export it
 
 
--type holiday() :: mungday | chaoflux | mojoday | discoflux |
-                   syaday | confuflux | zaraday | bureflux |
-                   maladay | afflux | st_tibs_day | none.
+-type holiday() :: fluxes() | days() | none.
+-type fluxes() :: chaoflux |
+                  discoflux |
+                  confuflux |
+                  bureflux |
+                  afflux.
+-type days() :: mungday |
+                  mojoday |
+                  syaday |
+                  zaraday |
+                  maladay |
+                  st_tibs_day.
 
 -type weekday() :: 1..5.
 
--type ddate() :: {yold(), holiday()} |
-                 {yold(), season(), day()}.
+-type ddate() :: {yold(), season(), day()} |
+                 {yold(), st_tibs_day}.
 
 -type tpl() :: string() | atom().
 
@@ -92,7 +102,8 @@ format(Format, Date) ->
 %% @doc Day in season to string
 %% @end
 %%---------------------------------------------------------
-format_day({_Yold, _Season, Day}) -> integer_to_list(Day).
+format_day({_Yold, _Season, Day}) -> integer_to_list(Day);
+format_day({_Yold, st_tibs_day}) -> "59.5".
 
 
 -spec format_day_suffix(ddate()) -> string().
@@ -118,7 +129,8 @@ format_season({_Y, 1, _D}) -> "Chaos";
 format_season({_Y, 2, _D}) -> "Discord";
 format_season({_Y, 3, _D}) -> "Confusion";
 format_season({_Y, 4, _D}) -> "Bureaucracy";
-format_season({_Y, 5, _D}) -> "The Aftermath".
+format_season({_Y, 5, _D}) -> "The Aftermath";
+format_season({_Y, st_tibs_day}) -> "Chaos".
     
 
 -spec format_yold(ddate()) -> string().
@@ -126,7 +138,8 @@ format_season({_Y, 5, _D}) -> "The Aftermath".
 %% @doc Convert YOLD to string
 %% @end
 %%---------------------------------------------------------
-format_yold({Y, _S, _D}) -> integer_to_list(Y).
+format_yold({Y, _S, _D}) -> integer_to_list(Y);
+format_yold({Y, _A}) -> integer_to_list(Y).
 
 
 -spec format_template(tpl()) -> string().
@@ -174,8 +187,7 @@ format_holiday(zaraday)     -> "Zaraday";
 format_holiday(bureflux)    -> "Bureflux";
 format_holiday(maladay)     -> "Maladay";
 format_holiday(afflux)      -> "Afflux";
-format_holiday(st_tibs_day) -> "St. Tib's Day";
-format_holiday(none)        -> "".
+format_holiday(st_tibs_day) -> "St. Tib's Day".
 
 
 -spec format_celebration(ddate()|holiday()) -> string().
@@ -186,7 +198,8 @@ format_holiday(none)        -> "".
 format_celebration(none) -> "";
 format_celebration({_Y, _M, _D} = Date) ->
     format_celebration(ddate_to_holiday(Date));
-
+format_celebration({_Y, Holiday}) ->
+    ", celebrate " ++ format_holiday(Holiday);
 format_celebration(Holiday) ->
     ", celebrate " ++ format_holiday(Holiday).
 
@@ -235,7 +248,7 @@ day_in_year({_, Month, Day}) ->
     
 
 
--spec days_in_month(calendar:month()) -> 28 | 30 | 31.
+-spec days_in_month(month()) -> 28 | 30 | 31.
 %%---------------------------------------------------------
 %% @doc Helper: Get days for month in a given year.
 %% @end
@@ -262,6 +275,9 @@ days_in_month(12) -> 31.
 %%---------------------------------------------------------
 ddate_to_weekday({_Y, Month, Day}) ->
     DayInYear = Day + 73 * (Month - 1),
+    1 + (DayInYear - 1) rem 5;
+ddate_to_weekday({_Y, st_tibs_day}) ->
+    DayInYear = 59,
     1 + (DayInYear - 1) rem 5.
 
 
@@ -281,7 +297,6 @@ ddate_to_holiday({_, 4, 5})   -> zaraday;
 ddate_to_holiday({_, 4, 50})  -> bureflux;
 ddate_to_holiday({_, 5, 5})   -> maladay;
 ddate_to_holiday({_, 5, 50})  -> afflux;
-ddate_to_holiday({_, st_tibs_day}) -> st_tibs_day;
 ddate_to_holiday(_)           -> none.
 
 
@@ -381,8 +396,7 @@ format_holiday_test_() ->
                 {bureflux,    "Bureflux"},
                 {maladay,     "Maladay"},
                 {afflux,      "Afflux"},
-                {st_tibs_day, "St. Tib's Day"},
-                {none,        ""}],
+                {st_tibs_day, "St. Tib's Day"}],
     [{"holiday to string",
         ?_assertEqual(Str, format_holiday(Holiday))} ||
             {Holiday, Str} <- Expected].
@@ -395,7 +409,6 @@ format_holiday_test_() ->
 ddate_to_holiday_test_() ->
     Expected = [{{2017, 1,  5},  "Mungday"},
                 {{2017, 2,  19}, "Chaoflux"},
-                {{2016, 2,  29}, "St. Tib's Day"},
                 {{2017, 3,  19}, "Mojoday"},
                 {{2017, 5,  3},  "Discoflux"},
                 {{2017, 5,  31}, "Syaday"},
@@ -403,8 +416,7 @@ ddate_to_holiday_test_() ->
                 {{2017, 8,  12}, "Zaraday"},
                 {{2017, 9,  26}, "Bureflux"},
                 {{2017, 10, 24}, "Maladay"},
-                {{2017, 12, 8},  "Afflux"},
-                {{2017, 12, 9},  ""}],
+                {{2017, 12, 8},  "Afflux"}],
     [{"date to holiday",
       ?_assertEqual(Holiday, format_holiday(
                                 ddate_to_holiday(
@@ -445,7 +457,9 @@ format_test_() ->
         {full, {2017, 5, 23},
                "Pungenday, the 70th day of Discord in the YOLD 3183"},
         {short, {2017, 5, 23},
-               "Pungenday, Discord 70, 3183 YOLD"}],
+               "Pungenday, Discord 70, 3183 YOLD"},
+        {full, {2016, 2,  29},
+               "Prickle-Prickle, the 59.5th day of Chaos in the YOLD 3182, celebrate St. Tib's Day"}],
     [{"date formatting",
         ?_assertEqual(Text, format(Fmt, date_to_ddate(Date)))} ||
             {Fmt, Date, Text} <- Expected].
